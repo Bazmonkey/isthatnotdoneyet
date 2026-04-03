@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How Long Has This Taken?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --border: #2a2a2a;
+      --accent: #ff4d00;
+      --accent2: #ffb800;
+      --accent3: #00c2a8;
+      --text: #e8e2d9;
+      --muted: #666;
+      --card-bg: #181818;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,77,0,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,77,0,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 60px 0 48px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .eyebrow::after {
+      content: '';
+      display: block;
+      height: 1px;
+      width: 24px;
+      background: var(--accent);
+    }
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 10vw, 96px);
+      line-height: 0.92;
+      letter-spacing: 0.01em;
+    }
+    h1 span { color: var(--accent); }
+    .subtitle {
+      margin-top: 20px;
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 300;
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    /* ── Input ── */
+    .input-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 32px;
+      margin-bottom: 48px;
+    }
+    .input-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: block;
+    }
+    .input-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .project-name-wrap { flex: 2; min-width: 200px; }
+    .project-name-wrap input,
+    .date-wrap input[type="date"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .date-wrap input[type="date"] { color-scheme: dark; }
+    .project-name-wrap input:focus,
+    .date-wrap input[type="date"]:focus { border-color: var(--accent); }
+    .project-name-wrap input::placeholder { color: var(--muted); }
+    .date-wrap { flex: 1; min-width: 160px; }
+    .go-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.08em;
+      padding: 0 32px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .go-btn:hover { background: #ff6a2a; }
+    .go-btn:active { transform: scale(0.97); }
+
+    /* ── Counter ── */
+    #counter-display { display: none; margin-bottom: 56px; }
+    .counter-inner {
+      border-left: 3px solid var(--accent);
+      padding-left: 24px;
+    }
+    .counter-project {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .counter-days {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(64px, 14vw, 120px);
+      line-height: 1;
+    }
+    .counter-days span { color: var(--accent2); }
+    .counter-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .counter-quip {
+      margin-top: 14px;
+      font-size: 14px;
+      color: #555;
+      font-style: italic;
+      max-width: 520px;
+      line-height: 1.5;
+    }
+
+    /* ── Results grid ── */
+    #results { display: none; }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 700px) {
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Result card ── */
+    .result-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .result-card:nth-child(2) { animation-delay: 0.08s; }
+    .result-card:nth-child(3) { animation-delay: 0.16s; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-eyebrow.global  { color: var(--accent); }
+    .card-eyebrow.wild    { color: var(--accent2); }
+    .card-eyebrow.local   { color: var(--accent3); }
+
+    .card-big-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 52px;
+      line-height: 1;
+    }
+    .card-big-number.global { color: var(--accent); }
+    .card-big-number.wild   { color: var(--accent2); }
+    .card-big-number.local  { color: var(--accent3); }
+
+    .card-big-unit {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .card-detail {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .card-quip {
+      font-size: 12px;
+      color: #505050;
+      font-style: italic;
+      line-height: 1.5;
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Share button ── */
+    .share-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .share-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .share-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .share-btn svg { width: 13px; height: 13px; fill: currentColor; }
+    .share-confirm {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--accent3);
+      letter-spacing: 0.1em;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 520px) {
+      .input-row { flex-direction: column; }
+      .go-btn { padding: 14px; width: 100%; }
+      header { padding: 36px 0 32px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">The task duration calculator</div>
+    <h1>IS THAT<br/><span>NOT DONE</span><br/>YET?</h1>
+    <p class="subtitle">Enter a start date. Find out what humanity managed to actually complete — and what the universe got up to — in that same time frame.</p>
+  </header>
+
+  <div class="input-section">
+    <label class="input-label">Project name &amp; start date</label>
+    <div class="input-row">
+      <div class="project-name-wrap">
+        <input type="text" id="project-name" placeholder="e.g. The New Expenses Process" />
+      </div>
+      <div class="date-wrap">
+        <input type="date" id="start-date" />
+      </div>
+      <button class="go-btn" onclick="calculate()">CALCULATE</button>
+    </div>
+  </div>
+
+  <div id="counter-display">
+    <div class="counter-inner">
+      <div class="counter-project" id="counter-label">YOUR PROJECT</div>
+      <div class="counter-days"><span id="day-count">0</span> DAYS</div>
+      <div class="counter-sub" id="counter-sub"></div>
+      <div class="counter-quip" id="counter-quip"></div>
+    </div>
+  </div>
+
+  <div id="results">
+    <div class="cards-grid" id="cards-grid"></div>
+    <div class="share-row">
+      <span class="share-confirm" id="share-confirm">
+        <svg viewBox="0 0 16 16"><path d="M6.5 12L2 7.5l1.4-1.4 3.1 3.1 6.1-6.1L14 4.5z"/></svg>
+        Copied to clipboard
+      </span>
+      <button class="share-btn" id="share-btn" onclick="shareResult()">
+        <svg viewBox="0 0 16 16"><path d="M11 2.5a2.5 2.5 0 1 1 .8 1.85L5.6 7.48a2.51 2.51 0 0 1 0 1.04l6.2 3.13a2.5 2.5 0 1 1-.7 1.38L4.9 9.85a2.5 2.5 0 1 1 0-3.7l6.2-3.13A2.5 2.5 0 0 1 11 2.5z"/></svg>
+        Share result
+      </button>
+    </div>
+  </div>
+
+  <footer>
+    Durations are approximate and cover principal construction or development phases.<br/>
+    Space distances use mean mission profiles. Treat as illustrative, not a procurement benchmark.
+  </footer>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// GLOBAL PROJECTS — add/edit freely
+// Each needs: name, days, category, detail, quip
+// ─────────────────────────────────────────────────────────────────────────────
+const GLOBAL_PROJECTS = [
+  { name: "Apollo 11 mission (Earth to Moon and back)", days: 8, category: "Space", detail: "July 1969", quip: "Landed on the Moon, planted a flag, came home. Eight days total." },
+  { name: "D-Day landings (Operation Neptune)", days: 1, category: "Military", detail: "June 6, 1944", quip: "The largest seaborne invasion in history. No steering committee required." },
+  { name: "First powered flight (Wright Brothers)", days: 1, category: "Engineering", detail: "Kitty Hawk, December 17, 1903", quip: "Achieved controlled powered flight on the day. Paperwork: none." },
+  { name: "Sputnik 1 in-orbit phase", days: 21, category: "Space", detail: "USSR, October–November 1957", quip: "First satellite in space. Whole mission done in three weeks." },
+  { name: "Dunkirk evacuation (Operation Dynamo)", days: 9, category: "Logistics", detail: "May–June 1940", quip: "Evacuated 338,000 soldiers using civilian boats. Nine days." },
+  { name: "Facebook: dorm room to Harvard launch", days: 60, category: "Technology", detail: "Mark Zuckerberg, January–February 2004", quip: "Two months, one dorm room. Still faster." },
+  { name: "NASA Ingenuity: landing to first Mars helicopter flight", days: 64, category: "Space", detail: "February–April 2021", quip: "Flew a helicopter on another planet. Your Jira board still says 'In Progress'." },
+  { name: "Empire State Building (structural steel frame)", days: 180, category: "Construction", detail: "New York, 1930", quip: "102 floors of steel in six months. No RAG status updates required." },
+  { name: "Mars Curiosity rover: launch to Mars landing", days: 254, category: "Space", detail: "NASA, November 2011–August 2012", quip: "Launched, flew 352 million miles, landed precisely. Under nine months." },
+  { name: "Instagram: concept to App Store launch", days: 270, category: "Technology", detail: "Systrom & Krieger, January–October 2010", quip: "A photo app that sold for $1 billion. Nine months, two people." },
+  { name: "Spitfire prototype: design brief to first flight", days: 306, category: "Engineering", detail: "Supermarine, approx 1934–1936", quip: "One of history's greatest aircraft designed and flown in about ten months." },
+  { name: "Viking 1: launch to Mars landing", days: 304, category: "Space", detail: "NASA, August 1975–July 1976", quip: "The 1970s apparently had better delivery timelines." },
+  { name: "WhatsApp: initial build to App Store", days: 300, category: "Technology", detail: "Koum & Acton, 2009", quip: "Built by two people. Now has 2 billion users." },
+  { name: "Twitter: first concept to public launch", days: 365, category: "Technology", detail: "Jack Dorsey, 2006", quip: "A globally used social network designed, built, and launched in one year." },
+  { name: "App Store: iPhone launch to App Store opening", days: 365, category: "Technology", detail: "Apple, June 2007–July 2008", quip: "An entire app ecosystem — platform, SDK, review process, launch. One year." },
+  { name: "Berlin Airlift", days: 321, category: "Logistics", detail: "June 1948–May 1949", quip: "Supplied an entire city by air for almost a year. Improvised from scratch." },
+  { name: "Empire State Building (full construction)", days: 410, category: "Construction", detail: "New York, 1930–1931", quip: "The whole building: 410 days. Still faster than your project." },
+  { name: "Pentagon", days: 491, category: "Construction", detail: "Arlington, Virginia, 1941–1943", quip: "The world's largest office building. Built during a world war. No change freeze." },
+  { name: "Eiffel Tower", days: 777, category: "Construction", detail: "Paris, 1887–1889", quip: "Critics said it was an eyesore. Took just over two years. Now defines a city." },
+  { name: "ENIAC: world's first general-purpose computer", days: 912, category: "Engineering", detail: "University of Pennsylvania, 1943–1945", quip: "The world's first programmable computer. About two and a half years." },
+  { name: "Lockheed SR-71 Blackbird: concept to first flight", days: 994, category: "Engineering", detail: "Skunk Works, 1959–1962", quip: "A Mach 3 spy plane developed in under three years. Kelly Johnson ran a tight ship." },
+  { name: "iPhone: conception to launch", days: 1001, category: "Technology", detail: "Apple, 2004–2007", quip: "Changed how every human communicates. Under three years." },
+  { name: "Titanic: keel to launch", days: 1041, category: "Construction", detail: "Harland & Wolff, Belfast, 1909–1912", quip: "Ship built in under three years. The iceberg took two hours." },
+  { name: "Channel Tunnel boring: first TBM to breakthrough", days: 1095, category: "Construction", detail: "UK–France, 1988–1991", quip: "Dug under the sea from both ends and met in the middle. Nailed it." },
+  { name: "Windows 95", days: 1096, category: "Technology", detail: "Microsoft, 1992–1995", quip: "Defined a generation of computing. Three years. Came with a CD and a prayer." },
+  { name: "World Wide Web: proposal to first website", days: 730, category: "Technology", detail: "Tim Berners-Lee, 1989–1991", quip: "Invented the internet as we know it. Two years, one man, one NeXT cube." },
+  { name: "Saturn V rocket: contract to first launch", days: 1461, category: "Engineering", detail: "NASA, 1963–1967", quip: "The most powerful rocket ever built. Four years from contract to launch pad." },
+  { name: "Golden Gate Bridge", days: 1568, category: "Construction", detail: "San Francisco, 1933–1937", quip: "One of the most recognisable structures on Earth. Just over four years." },
+  { name: "Hubble: launch to corrected optics", days: 1317, category: "Space", detail: "1990–1993", quip: "Launched with a flawed mirror, then fixed it. In space. Three years." },
+  { name: "Hoover Dam", days: 1744, category: "Construction", detail: "Nevada/Arizona, 1931–1936", quip: "Tamed the Colorado River and powered the American southwest. Five years." },
+  { name: "Burj Khalifa", days: 2190, category: "Construction", detail: "Dubai, 2004–2010", quip: "World's tallest building. Six years. Constructed in 50°C heat." },
+  { name: "Concorde: first flight to passenger service", days: 2557, category: "Engineering", detail: "1969–1976", quip: "A supersonic passenger jet. About seven years from first flight to service." },
+  { name: "Panama Canal (US construction phase)", days: 3652, category: "Construction", detail: "1904–1914", quip: "Joined two oceans. Ten years. Still finished it." },
+  { name: "Human Genome Project", days: 4745, category: "Science", detail: "International, 1990–2003", quip: "Mapped every gene in the human body. 13 years, 20 institutions, 6 countries." },
+  { name: "Sydney Opera House", days: 5478, category: "Construction", detail: "Sydney, 1958–1973", quip: "Yes, it took 15 years. But at least it's not still awaiting sign-off." },
+  { name: "Brooklyn Bridge", days: 5020, category: "Construction", detail: "New York, 1869–1883", quip: "14 years, three chief engineers, multiple deaths. Still standing after 140 years." },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCOTTISH PROJECTS — add/edit freely
+// ─────────────────────────────────────────────────────────────────────────────
+const SCOTTISH_PROJECTS = [
+  { name: "Forth Road Bridge: main span erection", days: 365, category: "Construction", detail: "Scotland, structural phase approx 1963–64", quip: "The main span of a major suspension bridge. One year." },
+  { name: "Falkirk Wheel: design to opening", days: 1460, category: "Construction", detail: "Scotland, 1999–2002", quip: "A rotating boat lift — entirely unique in the world. Four years." },
+  { name: "Queensferry Crossing: main construction", days: 1826, category: "Construction", detail: "Scotland, 2011–2017", quip: "A cable-stayed bridge across the Firth of Forth. Less than five years." },
+  { name: "Forth Bridge (original railway bridge)", days: 2920, category: "Construction", detail: "Scotland, 1883–1890", quip: "Still considered one of the finest examples of Victorian engineering." },
+  { name: "Scottish Parliament Building, Holyrood", days: 2557, category: "Construction", detail: "Edinburgh, 1999–2004", quip: "Came in over budget and late. You're in good company." },
+  { name: "Gleneagles Hotel construction", days: 730, category: "Construction", detail: "Perthshire, 1922–1924", quip: "A luxury hotel in the Scottish countryside. Two years. No Gantt chart required." },
+  { name: "Erskine Bridge", days: 1095, category: "Construction", detail: "River Clyde, 1968–1971", quip: "Crossed the Clyde. Three years, then open for business." },
+  { name: "Kessock Bridge (Inverness)", days: 1461, category: "Construction", detail: "Highland, 1978–1982", quip: "Connected the Black Isle to Inverness. Four years." },
+  { name: "Skye Bridge", days: 1095, category: "Construction", detail: "Kyle of Lochalsh, 1992–1995", quip: "Connected an island to the mainland. Three years." },
+  { name: "Edinburgh Tram Line: St Andrew Square to York Place extension", days: 730, category: "Construction", detail: "Edinburgh, 2019–2023 (approx works phase)", quip: "A short tram extension. Only took a couple of years. The original line took considerably longer." },
+  { name: "V&A Dundee museum", days: 1826, category: "Construction", detail: "Dundee, 2014–2018", quip: "Scotland's first design museum. Five years from break to opening." },
+  { name: "Glasgow Velodrome (Sir Chris Hoy Velodrome)", days: 912, category: "Construction", detail: "Glasgow, 2011–2012 (accelerated build)", quip: "A world-class cycling venue. Delivered in time for the 2014 Commonwealth Games." },
+  { name: "Cairngorm Mountain Railway", days: 548, category: "Engineering", detail: "Highland, 2001 construction phase approx", quip: "Britain's highest railway. Built on a mountain. Under two years." },
+  { name: "Beauly–Denny power line upgrade", days: 1460, category: "Engineering", detail: "Scotland, 2010–2015 (construction phase)", quip: "220km of power line through some of Scotland's finest scenery. Four years." },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WILD COMPARISONS — add/edit freely
+// Each needs: id (unique), label, unit (what we're counting), getDuration(days)
+// returning { count, unit, detail, quip }
+// ─────────────────────────────────────────────────────────────────────────────
+const WILD_COMPARISONS = [
+  {
+    id: "apollo",
+    label: "Apollo Moon missions",
+    getDuration: days => {
+      const missions = Math.floor(days / 8.5);
+      const miles = Math.round(missions * 477000 * 2).toLocaleString();
+      return {
+        count: missions,
+        unit: "Apollo-style Moon missions",
+        detail: `~${miles} miles of lunar travel`,
+        quip: `Each Apollo round trip took about 8–9 days. That's ${missions} complete missions — flags planted, Moon rocks collected, splashdowns.`
+      };
+    }
+  },
+  {
+    id: "artemis",
+    label: "Artemis II lunar orbits",
+    getDuration: days => {
+      const missions = Math.floor(days / 10);
+      const orbits = missions * 1;
+      return {
+        count: missions,
+        unit: "Artemis II-style lunar flybys",
+        detail: `~${(missions * 590000).toLocaleString()} miles of deep space travel`,
+        quip: `Artemis II is a ~10-day crewed lunar flyby mission. That's ${missions} full missions. Each one goes further from Earth than any human since Apollo 17.`
+      };
+    }
+  },
+  {
+    id: "voyager",
+    label: "Voyager 1 distance",
+    getDuration: days => {
+      // Voyager 1 travels ~1 million miles per day
+      const miles = Math.round(days * 1000000);
+      const au = (days * 1000000 / 93000000).toFixed(1);
+      return {
+        count: miles.toLocaleString(),
+        unit: "miles Voyager 1 has travelled",
+        detail: `That's ${au} Astronomical Units — the distance from Earth to Sun is 1 AU`,
+        quip: `Launched in 1977, Voyager 1 covers about 1 million miles a day and is now in interstellar space. While your project has been running, it's kept going.`
+      };
+    }
+  },
+  {
+    id: "iss",
+    label: "ISS orbits of Earth",
+    getDuration: days => {
+      const orbits = Math.round(days * 15.5);
+      const miles = Math.round(orbits * 27600).toLocaleString();
+      return {
+        count: orbits.toLocaleString(),
+        unit: "orbits of Earth by the ISS",
+        detail: `~${miles} miles at 17,500 mph`,
+        quip: `The International Space Station orbits Earth about 15–16 times a day at 17,500 mph. It's been busy while you've been waiting for sign-off.`
+      };
+    }
+  },
+  {
+    id: "light",
+    label: "Distance light has travelled",
+    getDuration: days => {
+      const km = (days * 86400 * 299792).toExponential(2);
+      const ly = (days / 365.25).toFixed(3);
+      return {
+        count: ly,
+        unit: "light-years of photon travel",
+        detail: `Light covers ~${(299792).toLocaleString()} km per second`,
+        quip: `Since your project started, light has travelled ${ly} light-years. Somewhere out there, photons from the day it kicked off are still going.`
+      };
+    }
+  },
+  {
+    id: "human_heartbeats",
+    label: "Human heartbeats",
+    getDuration: days => {
+      const beats = Math.round(days * 24 * 60 * 70);
+      return {
+        count: beats.toLocaleString(),
+        unit: "human heartbeats",
+        detail: `At an average resting rate of 70 bpm`,
+        quip: `Your heart has beaten roughly ${beats.toLocaleString()} times since this project started. It's committed. Unlike the project timeline.`
+      };
+    }
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COUNTER QUIPS — edit freely, one is picked at random
+// ─────────────────────────────────────────────────────────────────────────────
+const COUNTER_QUIPS = [
+  d => `Rome wasn't built in a day. Probably didnt take this long though.`,
+  d => `Good things come to those who wait. Anyone waiting for this task to be done will be expecting a massive lottery win any day now.`,
+  d => `It'll be ready when it's ready. We might all be dead first though`,
+  d => `Slow and steady wins the race. Yeah, but you can probably still be too slow though.`,
+  d => `Slow and steady wins the race. If there is a limit to just how slow, you will find it.`, 
+  d => `The wheels of progress turn slowly. Your wheels fell off.`,
+  d => `You can't rush perfection. Which is why we call you Perfection behind your back`,
+  d => `It's a marathon, not a sprint. No one is mistaking you for a sprinter.`,
+  d => `Time flies when you are having fun. This isnt fun for anyone though.`,
+  d => `Better late than never. Feels like a coin toss for which one we are going to get though.`,
+  d => `Patience is a virtue. We must all be the most virtuous people alive with the patience this is taking`,
+  d => `A watched pot never boils. There must be so many sets of eyes on this.`,
+  d => `There aren't enough hours in the day. Its not really about the hours though when you can barely measure this with a calendar`,
+  d => `It's about the journey, not about the destination. Because no one is expecting to see this finished`,
+  d => `We're nearly there. Except we're not.`,
+  d => `Time waits for no man, but Time will need to be more patient if it wants to see this finished.`,
+  d => `Nothing in life is certain, except death and taxes... oh, and this task not being completed any time soon`,
+  d => `Every journey begins with a single step. With this task it feels like you took that one step, fell over, and then couldnt get back up`,
+  d => `The best time to plant a tree was 20 years ago. Roughly the same time that backwards scheduling would have told you to start this.`,
+  d => `"It's in the pipe. Always in the pipe.`,
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// State for share function
+// ─────────────────────────────────────────────────────────────────────────────
+let _shareText = '';
+
+function calculate() {
+  const dateInput  = document.getElementById('start-date').value;
+  const nameInput  = document.getElementById('project-name').value.trim();
+
+  if (!dateInput) { document.getElementById('start-date').focus(); return; }
+
+  const start = new Date(dateInput);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  start.setHours(0,0,0,0);
+  const diff = Math.floor((today - start) / 86400000);
+
+  if (diff < 0) {
+    alert("Start date is in the future. Bold planning, but this tool only does regret.");
+    return;
+  }
+
+  // ── Counter ──────────────────────────────────────────────────────
+  const counterDisplay = document.getElementById('counter-display');
+  counterDisplay.style.display = 'block';
+  const label = nameInput || 'YOUR PROJECT';
+  document.getElementById('counter-label').textContent = label.toUpperCase();
+  document.getElementById('day-count').textContent = diff.toLocaleString();
+  const years = (diff / 365.25).toFixed(1);
+  const weeks = Math.floor(diff / 7);
+  document.getElementById('counter-sub').textContent =
+    `${years} years · ${weeks.toLocaleString()} weeks · ${diff.toLocaleString()} days`;
+  const quipFn = COUNTER_QUIPS[Math.floor(Math.random() * COUNTER_QUIPS.length)];
+  document.getElementById('counter-quip').textContent = quipFn(diff);
+
+  // ── Card 1: Nearest global project ────────────────────────────────
+  const globalMatch = GLOBAL_PROJECTS
+    .filter(p => p.days < diff)
+    .sort((a, b) => b.days - a.days)[0];
+
+  // ── Card 2: Random wild comparison ────────────────────────────────
+  const wildComp = WILD_COMPARISONS[Math.floor(Math.random() * WILD_COMPARISONS.length)];
+  const wildResult = wildComp.getDuration(diff);
+
+  // ── Card 3: Nearest Scottish project ──────────────────────────────
+  const scottishMatch = SCOTTISH_PROJECTS
+    .filter(p => p.days < diff)
+    .sort((a, b) => b.days - a.days)[0];
+
+  // ── Render ─────────────────────────────────────────────────────────
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+
+  // Global card
+  if (globalMatch) {
+    const faster = diff - globalMatch.days;
+    grid.innerHTML += `
+      <div class="result-card">
+        <div class="card-eyebrow global">🌍 Nearest global project</div>
+        <div>
+          <div class="card-big-number global">${globalMatch.days.toLocaleString()}</div>
+          <div class="card-big-unit">days to complete</div>
+        </div>
+        <div>
+          <div class="card-title">${globalMatch.name}</div>
+          <div class="card-detail">${globalMatch.detail} · ${globalMatch.category}</div>
+        </div>
+        <div class="card-quip">${globalMatch.quip}<br/><br/>Done <strong style="color:var(--accent)">${faster.toLocaleString()} days</strong> before yours.</div>
+      </div>`;
+  } else {
+    grid.innerHTML += `
+      <div class="result-card">
+        <div class="card-eyebrow global">🌍 Nearest global project</div>
+        <div class="card-quip">Nothing in the dataset was completed this quickly. You may actually be efficient.</div>
+      </div>`;
+  }
+
+  // Wild card
+  grid.innerHTML += `
+    <div class="result-card">
+      <div class="card-eyebrow wild">🚀 Meanwhile, in space…</div>
+      <div>
+        <div class="card-big-number wild">${wildResult.count}</div>
+        <div class="card-big-unit">${wildResult.unit}</div>
+      </div>
+      <div class="card-detail">${wildResult.detail}</div>
+      <div class="card-quip">${wildResult.quip}</div>
+    </div>`;
+
+  // Scottish card
+  if (scottishMatch) {
+    const fasterS = diff - scottishMatch.days;
+    grid.innerHTML += `
+      <div class="result-card">
+        <div class="card-eyebrow local">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Nearest Scottish project</div>
+        <div>
+          <div class="card-big-number local">${scottishMatch.days.toLocaleString()}</div>
+          <div class="card-big-unit">days to complete</div>
+        </div>
+        <div>
+          <div class="card-title">${scottishMatch.name}</div>
+          <div class="card-detail">${scottishMatch.detail} · ${scottishMatch.category}</div>
+        </div>
+        <div class="card-quip">${scottishMatch.quip}<br/><br/>Done <strong style="color:var(--accent3)">${fasterS.toLocaleString()} days</strong> before yours.</div>
+      </div>`;
+  } else {
+    grid.innerHTML += `
+      <div class="result-card">
+        <div class="card-eyebrow local">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Nearest Scottish project</div>
+        <div class="card-quip">Nothing in the Scottish dataset was completed this quickly. Unprecedented.</div>
+      </div>`;
+  }
+
+  // ── Build share text ───────────────────────────────────────────────
+  const projName = nameInput || 'A project';
+  _shareText = `${projName} has been running for ${diff.toLocaleString()} days (${years} years).\n\n`;
+  if (globalMatch) _shareText += `🌍 The ${globalMatch.name} was built in ${globalMatch.days} days — ${diff - globalMatch.days} days less.\n`;
+  _shareText += `🚀 In that time: ${wildResult.count} ${wildResult.unit}.\n`;
+  if (scottishMatch) _shareText += `🏴󠁧󠁢󠁳󠁣󠁴󠁿 The ${scottishMatch.name} took ${scottishMatch.days} days.\n`;
+  _shareText += `\nhowlonghasthis.taken`;
+
+  // Reset share confirm
+  document.getElementById('share-confirm').style.display = 'none';
+
+  document.getElementById('results').style.display = 'block';
+  setTimeout(() => counterDisplay.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+async function shareResult() {
+  if (!_shareText) return;
+
+  // Try native share sheet first (works on mobile and HTTPS)
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'How Long Has This Taken?', text: _shareText });
+      return;
+    } catch(e) {
+      // User cancelled or API failed — fall through to clipboard
+    }
+  }
+
+  // Fallback: copy to clipboard
+  try {
+    await navigator.clipboard.writeText(_shareText);
+    const confirm = document.getElementById('share-confirm');
+    confirm.style.display = 'flex';
+    setTimeout(() => confirm.style.display = 'none', 3000);
+  } catch(e) {
+    // Last resort: prompt
+    window.prompt('Copy this to share:', _shareText);
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+document.getElementById('start-date').max = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
