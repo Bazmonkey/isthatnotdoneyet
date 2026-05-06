@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Is That Not Done Yet?</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏳</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -484,7 +485,7 @@ function calculate() {
   // Wild card
   grid.innerHTML += `
     <div class="result-card">
-      <div class="card-eyebrow wild">🚀 How many times…</div>
+      <div class="card-eyebrow wild">⏳ In that time…</div>
       <div>
         <div class="card-big-number wild">${wildResult.count}</div>
         <div class="card-big-unit">${wildResult.unit}</div>
@@ -521,7 +522,7 @@ function calculate() {
   const projName = nameInput || 'A project';
   _shareText = `${projName} has been running for ${diff.toLocaleString()} days (${years} years).\n\n`;
   if (globalMatch) _shareText += `🌍 The ${globalMatch.name} was completed in ${globalMatch.days} days — ${diff - globalMatch.days} days less.\n`;
-  _shareText += `🚀 In that time: ${wildResult.count} ${wildResult.unit}.\n`;
+  _shareText += `⏳ In that time: ${wildResult.count} ${wildResult.unit}.\n`;
   if (localMatch)  _shareText += `🏴󠁧󠁢󠁳󠁣󠁴󠁿 The ${localMatch.name} took ${localMatch.days} days.\n`;
   _shareText += `\nisthatnotdoneyet.xyz`;
 
